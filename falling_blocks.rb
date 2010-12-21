@@ -1,6 +1,8 @@
 module FallingBlocks
 
   class Piece
+     SYMBOL = "#"
+
     def initialize(points)
       @points = points
       establish_anchor
@@ -10,7 +12,13 @@ module FallingBlocks
 
     # Gets the top-left most point
     def establish_anchor
-      @anchor = @points.max_by { |x,y| [y,-x] }
+      @anchor = @points.min_by { |x,y| [y,-x] }
+    end
+
+    def paint(canvas)
+      points.each do |point|
+        canvas.paint(point, SYMBOL)
+      end
     end
   end
 
@@ -43,9 +51,10 @@ module FallingBlocks
 end
 
 if __FILE__ == $PROGRAM_NAME
-  line = FallingBlocks::Piece.new([[0,0],[0,1],[0,2],[0,3]])
-  p line.anchor 
+  canvas = FallingBlocks::Canvas.new
 
-  bent = FallingBlocks::Piece.new([[0,1],[0,2],[1,0],[1,1]])
-  p bent.anchor
+  bent_shape = FallingBlocks::Piece.new([[0,1],[0,2],[1,0],[1,1]])
+  bent_shape.paint(canvas)
+
+  puts canvas
 end
