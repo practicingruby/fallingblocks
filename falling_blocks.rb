@@ -12,13 +12,17 @@ module FallingBlocks
 
     # Gets the top-left most point
     def establish_anchor
-      @anchor = @points.min_by { |x,y| [y,-x] }
+      @anchor = @points.max_by { |x,y| [y,-x] }
     end
 
-    def paint(canvas)
-      points.each do |point|
-        canvas.paint(point, SYMBOL)
-      end
+    def translated_points(new_anchor)
+      new_x, new_y = new_anchor
+      old_x, old_y = anchor
+
+      dx = new_x - old_x
+      dy = new_y - old_y
+      
+      points.map { |x,y| [x+dx, y+dy] }
     end
   end
 
@@ -32,6 +36,12 @@ module FallingBlocks
     def paint(point, marker)
       x,y = point
       @data[SIZE-y-1][x] = marker
+    end
+
+    def paint_shape(shape, position)
+      shape.translated_points(position).each do |point|
+        paint(point, Piece::SYMBOL)
+      end
     end
 
     def to_s
@@ -54,7 +64,8 @@ if __FILE__ == $PROGRAM_NAME
   canvas = FallingBlocks::Canvas.new
 
   bent_shape = FallingBlocks::Piece.new([[0,1],[0,2],[1,0],[1,1]])
-  bent_shape.paint(canvas)
+
+  canvas.paint_shape(bent_shape, [2,3])
 
   puts canvas
 end
