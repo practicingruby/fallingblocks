@@ -1,8 +1,27 @@
 module FallingBlocks
+  class Game
+    def initialize
+      @junk           = []
+      @piece          = nil
+      @piece_position = []
+    end
+
+    attr_accessor :junk, :piece, :piece_position
+
+    def to_s
+      canvas = Canvas.new
+
+      junk.each do |pos|
+        canvas.paint(pos, "|")
+      end
+
+      canvas.paint_shape(piece, piece_position, "#")
+
+      canvas.to_s
+    end
+  end
 
   class Piece
-     SYMBOL = "#"
-
     def initialize(points)
       @points = points
       establish_anchor
@@ -38,9 +57,9 @@ module FallingBlocks
       @data[SIZE-y-1][x] = marker
     end
 
-    def paint_shape(shape, position)
+    def paint_shape(shape, position, marker)
       shape.translated_points(position).each do |point|
-        paint(point, Piece::SYMBOL)
+        paint(point, marker)
       end
     end
 
@@ -61,11 +80,14 @@ module FallingBlocks
 end
 
 if __FILE__ == $PROGRAM_NAME
-  canvas = FallingBlocks::Canvas.new
-
+  game = FallingBlocks::Game.new
   bent_shape = FallingBlocks::Piece.new([[0,1],[0,2],[1,0],[1,1]])
+  game.piece = bent_shape
+  game.piece_position = [2,3]
+  game.junk += [[0,0], [1,0], [2,0], [2,1], [4,0],
+                [4,1], [4,2], [5,0], [5,1], [6,0],
+                [7,0], [8,0], [8,1], [9,0], [9,1],
+                [9,2]]
 
-  canvas.paint_shape(bent_shape, [2,3])
-
-  puts canvas
+  puts game
 end
