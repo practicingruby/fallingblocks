@@ -1,21 +1,49 @@
 module FallingBlocks
   class Game
     def initialize
-      @junk           = []
+      @junk = Canvas::SIZE.times.map { Array.new(Canvas::SIZE) }
+      
       @piece          = nil
       @piece_position = []
     end
 
-    attr_accessor :junk, :piece, :piece_position
+    attr_accessor :piece, :piece_position
+
+    def add_junk(points)
+      points.each do |x,y|
+        @junk[y][x] = true
+      end
+    end
+
+    # FIXME: Assumes currently piece is going to be transformed
+    # into junk without checking to see that it is touching any
+    # existing junk
+    def update_junk
+      convert_piece_to_junk
+
+      @junk.delete_if { |row| row.all? }
+
+      @junk << [] until @junk.length == Canvas::SIZE  
+    end
+
+    def convert_piece_to_junk
+      add_junk(piece.translated_points(piece_position))
+      @piece = nil
+      @piece_position = nil
+    end
 
     def to_s
       canvas = Canvas.new
 
-      junk.each do |pos|
-        canvas.paint(pos, "|")
+      @junk.each_with_index do |row, y|
+        row.each_with_index do |col, x|
+          canvas.paint([x,y], "|") if col
+        end
       end
 
-      canvas.paint_shape(piece, piece_position, "#")
+      if piece
+        canvas.paint_shape(piece, piece_position, "#") 
+      end
 
       canvas.to_s
     end
@@ -52,6 +80,8 @@ module FallingBlocks
       @data = SIZE.times.map { Array.new(SIZE) }
     end
 
+    attr_reader :data
+
     def paint(point, marker)
       x,y = point
       @data[SIZE-y-1][x] = marker
@@ -77,17 +107,4 @@ module FallingBlocks
       end.join("\n")
     end
   end
-end
-
-if __FILE__ == $PROGRAM_NAME
-  game = FallingBlocks::Game.new
-  bent_shape = FallingBlocks::Piece.new([[0,1],[0,2],[1,0],[1,1]])
-  game.piece = bent_shape
-  game.piece_position = [2,3]
-  game.junk += [[0,0], [1,0], [2,0], [2,1], [4,0],
-                [4,1], [4,2], [5,0], [5,1], [6,0],
-                [7,0], [8,0], [8,1], [9,0], [9,1],
-                [9,2]]
-
-  puts game
 end
